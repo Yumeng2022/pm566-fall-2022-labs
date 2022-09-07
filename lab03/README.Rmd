@@ -6,12 +6,19 @@ output: github_document
 always_allow_html: true
 ---
 
+```{r}
+library(webshot)
+webshot::install_phantomjs()
+```
+
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
 ## 1. Read in the data
 First download and then read in with data.table:fread()
+
+
 
 ```{r}
 library(R.utils)
