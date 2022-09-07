@@ -3,6 +3,7 @@ title: "Lab 03"
 author: "Yumeng Gao"
 date: "`r Sys.Date()`"
 output: github_document
+always_allow_html: true
 ---
 
 ```{r setup, include=FALSE}
@@ -99,14 +100,13 @@ summary(elev)
 met[elev==max(elev,na.rm=T), summary(wind.sp)]
 ```
 
+```{r}
 met[elev==max(elev,na.rm=T), .(
-  temp_wind= cor(temp, wind.sp, use= "complete")
-  temp_hour= cor(temp, hour, use= "complete")
-  wind.sp_day= cor(wind.sp, day, use= "complete")
+  temp_wind= cor(temp, wind.sp, use= "complete"),
+  temp_hour= cor(temp, hour, use= "complete"),
+  wind.sp_day= cor(wind.sp, day, use= "complete"),
   wind.sp_hour= cor(wind.sp, hour, use= "complete")
 )]
-```{r}
-
 ```
 
 
