@@ -1,0 +1,139 @@
+---
+title: "Lab 03"
+author: "Yumeng Gao"
+date: "`r Sys.Date()`"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## 1. Read in the data
+First download and then read in with data.table:fread()
+
+```{r}
+library(R.utils)
+library(data.table)
+library(tidyverse)
+
+if (!file.exists("met_all.gz")){
+  download.file("https://raw.githubusercontent.com/USCbiostats/data-science-data/master/02_met/met_all.gz", "met_all.gz", method="libcurl", timeout = 60)
+}
+
+met <- data.table::fread("met_all.gz")
+```
+
+## 2. Check the dimensions, headers, footers. How many columns, rows are there?
+
+```{r}
+dim(met)
+head(met)
+tail(met)
+```
+
+## 3. Take a look at the variables.
+```{r}
+str(met)
+```
+
+## 4. Take a closer look at the key variables.
+```{r}
+table(met$year)
+```
+
+```{r}
+table(met$day)
+```
+
+```{r}
+table(met$hour)
+```
+
+```{r}
+summary(met$temp)
+summary(met$elev)
+summary(met$wind.sp)
+```
+OR
+```{r}
+met[,summary(temp)]
+```
+
+Replace elevations with 9999 as NA.
+```{r}
+met[met$elev==9999.0] <- NA
+summary(met$elev)
+```
+
+
+The weather station with highest elevation is at `r max(met$elev,na.rm=TRUE)` meters.
+
+
+Remove temp below -40 Celsius.
+
+```{r}
+met <- met[temp>-40]
+met2 <- met[order(temp)]
+head(met2)
+```
+
+## 5. Check the data against an external data source.
+
+```{r}
+met <- met[temp>-15]
+met2 <- met[order(temp)]
+head(met2)
+```
+
+
+## 6. Calculate summary statistics
+
+```{r}
+elev <- met[elev==max(elev)]
+summary(elev)
+```
+
+
+```{r}
+met[elev==max(elev,na.rm=T), summary(wind.sp)]
+```
+
+met[elev==max(elev,na.rm=T), .(
+  temp_wind= cor(temp, wind.sp, use= "complete")
+  temp_hour= cor(temp, hour, use= "complete")
+  wind.sp_day= cor(wind.sp, day, use= "complete")
+  wind.sp_hour= cor(wind.sp, hour, use= "complete")
+)]
+```{r}
+
+```
+
+
+## 7. Exploratory graphs
+```{r}
+hist(met$elev, breaks=100)
+```
+```{r}
+hist(met$temp)
+```
+```{r}
+hist(met$wind.sp)
+```
+```{r}
+if (!require(leaflet)){
+  install.packages("leaflet")
+}
+library(leaflet)
+leaflet(elev) %>%
+  addProviderTiles('OpenStreetMap') %>% 
+  addCircles(lat=~lat,lng=~lon, opacity=1, fillOpacity=1, radius=100)
+```
+
+
+```{r}
+
+```
+
+
+
