@@ -247,8 +247,100 @@ met_avg[!is.na(region) & !is.na(wind.sp)] %>%
 
 ## 5. Use geom_bar to create barplots of the weather stations by elevation category coloured by region
 
+Bars by elevation category using position=“dodge” Change colours from
+the default. Colour by region using scale_fill_brewer see this Create
+nice labels on axes and add a title Describe what you observe in the
+graph Make sure to deal with NA
+
 ## 6. Use stat_summary to examine mean dew point and wind speed by region with standard deviation error bars
 
+Make sure to remove NA Use fun.data=“mean_sdl” in stat_summary Add
+another layer of stats_summary but change the geom to “errorbar” (see
+the help). Describe the graph and what you observe Dew point temperature
+is… Wind speed is…
+
+``` r
+met_avg[!is.na(dew.point)] %>%
+  ggplot(mapping = aes(x = region, y = dew.point)) + 
+  stat_summary(fun.data= mean_sdl, geom= "errorbar")+
+  stat_summary(fun.data= mean_sdl)
+```
+
+![](README_files/figure-gfm/unnamed-chunk-8-1.png)<!-- -->
+
+``` r
+#to show both means and error bars
+```
+
 ## 7. Make a map showing the spatial trend in relative h in the US
+
+Make sure to remove NA
+
+Use leaflet()
+
+Make a colour palette with custom colours
+
+Use addMarkers to include the top 10 places in relative h (hint: this
+will be useful rank(-rh) \<= 10)
+
+Add a legend
+
+Describe trend in RH across the US
+
+``` r
+# Generating a color palette
+library(leaflet)
+rh.pal <- colorNumeric(c('darkgreen','goldenrod','brown'), domain=met_avg$rh)
+rh.pal
+```
+
+    ## function (x) 
+    ## {
+    ##     if (length(x) == 0 || all(is.na(x))) {
+    ##         return(pf(x))
+    ##     }
+    ##     if (is.null(rng)) 
+    ##         rng <- range(x, na.rm = TRUE)
+    ##     rescaled <- scales::rescale(x, from = rng)
+    ##     if (any(rescaled < 0 | rescaled > 1, na.rm = TRUE)) 
+    ##         warning("Some values were outside the color scale and will be treated as NA")
+    ##     if (reverse) {
+    ##         rescaled <- 1 - rescaled
+    ##     }
+    ##     pf(rescaled)
+    ## }
+    ## <bytecode: 0x7feb2acdf038>
+    ## <environment: 0x7feb2ace1968>
+    ## attr(,"colorType")
+    ## [1] "numeric"
+    ## attr(,"colorArgs")
+    ## attr(,"colorArgs")$na.color
+    ## [1] "#808080"
+
+Use addMarkers to include the top 10 places in relative h (hint: this
+will be useful rank(-rh) \<= 10)
+
+``` r
+top10rh= met_avg[rank(-rh) <=10][1:10]
+```
+
+``` r
+rhmap <- leaflet(met_avg) %>% 
+  # The looks of the Map
+  addProviderTiles('CartoDB.Positron') %>% 
+  # Some circles
+  addCircles(
+    lat = ~lat, lng=~lon,
+                                                  # HERE IS OUR PAL!
+    label = ~paste0(rh), color = ~ rh.pal(rh),
+    opacity = 1, fillOpacity = 1, radius = 500
+    ) %>%
+  # And a pretty legend
+  addLegend('bottomleft', pal=rh.pal, values=met_avg$rh,
+          title='Releative Hunid.', opacity=1)
+rhmap
+```
+
+![](README_files/figure-gfm/unnamed-chunk-11-1.png)<!-- -->
 
 ## 8. Use a ggplot extension
