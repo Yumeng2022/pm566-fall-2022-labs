@@ -88,18 +88,50 @@ met_avg= met[, .(
 ```
 
 Create a region variable for NW, SW, NE, SE based on lon = -98.00 and lat = 39.71 degrees
-
-
+```{r}
+met_avg= met_avg[ , region := fifelse(lon>= -98 & lat> 39.71, "NE",
+                 fifelse(lon< -98 & lat> 39.71, "NW",
+                 fifelse(lon< -98 & lat<= 39.71, "SW","SE")))
+     ]
+table(met_avg$region)
+```
 
 Create a categorical variable for elevation as in the lecture slides
+```{r}
+met_avg[, elev_cat := fifelse(elev >252, "high", "low")]
+```
 
 ## 3. Use geom_violin to examine the wind speed and dew point temperature by region
-```{r}
+```{r violin-dewpoint}
+met_avg[!is.na(region)] %>% 
+  ggplot() + 
+  geom_violin(mapping = aes(x = 1, y = dew.point, color=region, fill= region)) + 
+  facet_wrap(~ region, nrow = 1)
+```
+the highest dew point temp is in se
 
+```{r violin-wind.sp}
+met_avg[!is.na(region) & !is.na(wind.sp)] %>% 
+  ggplot() + 
+  geom_violin(mapping = aes(x = 1, y = wind.sp, color=region, fill= region)) + 
+  facet_wrap(~ region, nrow = 2)
+```
+ne has the highest wind speed
+
+## 4. Use geom_point with stat_smooth to examine the association between dew point temperature and wind speed by region
+Colour points by region
+Make sure to deal with NA category
+Fit a linear regression line by region
+Describe what you observe in the graph
+```{r scatterplot-dewpoint-wind.sp}
+met_avg[!is.na(region) & !is.na(wind.sp)] %>% 
+  ggplot(mapping = aes(x = wind.sp, y = dew.point)) + 
+  geom_point(mapping= aes(color= region)) + 
+  geom_smooth(method= lm, mapping= aes(linetype= region))+
+  facet_wrap(~ region, nrow = 2)
 ```
 
 
-## 4. Use geom_jitter with stat_smooth to examine the association between dew point temperature and wind speed by region
 ```{r}
 
 ```
@@ -130,122 +162,4 @@ Create a categorical variable for elevation as in the lecture slides
 ```{r}
 
 ```
-
-
-## 
-
-
-
-## 2. Check the dimensions, headers, footers. How many columns, rows are there?
-
-```{r}
-dim(met)
-head(met)
-tail(met)
-```
-
-## 3. Take a look at the variables.
-```{r}
-str(met)
-```
-
-## 4. Take a closer look at the key variables.
-```{r}
-table(met$year)
-```
-
-```{r}
-table(met$day)
-```
-
-```{r}
-table(met$hour)
-```
-
-```{r}
-summary(met$temp)
-summary(met$elev)
-summary(met$wind.sp)
-```
-OR
-```{r}
-met[,summary(temp)]
-```
-
-Replace elevations with 9999 as NA.
-```{r}
-met[met$elev==9999.0] <- NA
-summary(met$elev)
-```
-
-
-The weather station with highest elevation is at `r max(met$elev,na.rm=TRUE)` meters.
-
-
-Remove temp below -40 Celsius.
-
-```{r}
-met <- met[temp>-40]
-met2 <- met[order(temp)]
-head(met2)
-```
-
-## 5. Check the data against an external data source.
-
-```{r}
-met <- met[temp>-15]
-met2 <- met[order(temp)]
-head(met2)
-```
-
-
-## 6. Calculate summary statistics
-
-```{r}
-elev <- met[elev==max(elev)]
-summary(elev)
-```
-
-
-```{r}
-met[elev==max(elev,na.rm=T), summary(wind.sp)]
-```
-
-```{r}
-met[elev==max(elev,na.rm=T), .(
-  temp_wind= cor(temp, wind.sp, use= "complete"),
-  temp_hour= cor(temp, hour, use= "complete"),
-  wind.sp_day= cor(wind.sp, day, use= "complete"),
-  wind.sp_hour= cor(wind.sp, hour, use= "complete")
-)]
-```
-
-
-## 7. Exploratory graphs
-```{r}
-hist(met$elev, breaks=100)
-```
-```{r}
-hist(met$temp)
-```
-```{r}
-hist(met$wind.sp)
-```
-```{r}
-if (!require(leaflet)){
-  install.packages("leaflet")
-}
-library(leaflet)
-library(dplyr)
-leaflet(elev) %>%
-  addProviderTiles('OpenStreetMap') %>% 
-  addCircles(lat=~lat,lng=~lon, opacity=1, fillOpacity=1, radius=100)
-```
-
-
-```{r}
-
-```
-
-
 
