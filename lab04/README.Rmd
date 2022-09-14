@@ -1,0 +1,251 @@
+---
+title: "Lab 04"
+author: "Yumeng Gao"
+date: "`r Sys.Date()`"
+output: github_document
+always_allow_html: true
+---
+
+```{r}
+library(webshot)
+webshot::install_phantomjs()
+```
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## 1. Read in the data
+First download and then read in with data.table:fread()
+```{r}
+library(R.utils)
+library(data.table)
+library(tidyverse)
+library(lubridate)
+```
+
+
+```{r read-data, cache= TRUE}
+if (!file.exists("met_all.gz"))
+  download.file(
+    url = "https://raw.githubusercontent.com/USCbiostats/data-science-data/master/02_met/met_all.gz",
+    destfile = "met_all.gz",
+    method   = "libcurl",
+    timeout  = 60
+    )
+met <- data.table::fread("met_all.gz")
+```
+
+
+
+## 2. Prepare the data
+```{r}
+# Remove temperatures less than -17C
+# Make sure there are no missing data in the key variables coded as 9999, 999, etc
+met <- met[temp>-17] [elev == 9999.0, elev := NA]
+
+# check no 9999s in other important variables
+summary(met$temp)
+summary(met$elev)
+summary(met$wind.sp)
+```
+
+Generate a date variable using the functions as.Date() (hint: You will need the following to create a date paste(year, month, day, sep = "-")).
+```{r create-ymd,, cache= TRUE }
+met= met[ , ymd := as.Date(paste(year, month, day, sep = "-"))]
+```
+
+Using the data.table::week function, keep the observations of the first week of the month.
+```{r}
+met[, table(week(ymd))]
+met= met[week(ymd)==31]
+```
+
+Compute the mean by station of the variables temp, rh, wind.sp, vis.dist, dew.point, lat, lon, and elev.
+```{r check max}
+met[, .(
+  temp= max(temp, na.rm=T),
+  rh= max(rh, na.rm=T),
+  wind.sp= max(wind.sp, na.rm=T),
+  vis.dist= max(vis.dist, na.rm=T), 
+  dew.point= max(dew.point, na.rm=T), 
+  lat= max(lat, na.rm=T), 
+  lon= max(lon, na.rm=T), 
+  elev= max(elev, na.rm=T)
+)]
+```
+```{r check-avg}
+met_avg= met[, .(
+  temp= mean(temp, na.rm=T),
+  rh= mean(rh, na.rm=T),
+  wind.sp= mean(wind.sp, na.rm=T),
+  vis.dist= mean(vis.dist, na.rm=T), 
+  dew.point= mean(dew.point, na.rm=T), 
+  lat= mean(lat, na.rm=T), 
+  lon= mean(lon, na.rm=T), 
+  elev= mean(elev, na.rm=T)
+), by= 'USAFID']
+```
+
+Create a region variable for NW, SW, NE, SE based on lon = -98.00 and lat = 39.71 degrees
+
+
+
+Create a categorical variable for elevation as in the lecture slides
+
+## 3. Use geom_violin to examine the wind speed and dew point temperature by region
+```{r}
+
+```
+
+
+## 4. Use geom_jitter with stat_smooth to examine the association between dew point temperature and wind speed by region
+```{r}
+
+```
+
+
+
+## 5. Use geom_bar to create barplots of the weather stations by elevation category coloured by region
+```{r}
+
+```
+
+
+## 6. Use stat_summary to examine mean dew point and wind speed by region with standard deviation error bars
+```{r}
+
+```
+
+
+
+## 7. Make a map showing the spatial trend in relative h in the US
+```{r}
+
+```
+
+
+## 8. Use a ggplot extension
+
+```{r}
+
+```
+
+
+## 
+
+
+
+## 2. Check the dimensions, headers, footers. How many columns, rows are there?
+
+```{r}
+dim(met)
+head(met)
+tail(met)
+```
+
+## 3. Take a look at the variables.
+```{r}
+str(met)
+```
+
+## 4. Take a closer look at the key variables.
+```{r}
+table(met$year)
+```
+
+```{r}
+table(met$day)
+```
+
+```{r}
+table(met$hour)
+```
+
+```{r}
+summary(met$temp)
+summary(met$elev)
+summary(met$wind.sp)
+```
+OR
+```{r}
+met[,summary(temp)]
+```
+
+Replace elevations with 9999 as NA.
+```{r}
+met[met$elev==9999.0] <- NA
+summary(met$elev)
+```
+
+
+The weather station with highest elevation is at `r max(met$elev,na.rm=TRUE)` meters.
+
+
+Remove temp below -40 Celsius.
+
+```{r}
+met <- met[temp>-40]
+met2 <- met[order(temp)]
+head(met2)
+```
+
+## 5. Check the data against an external data source.
+
+```{r}
+met <- met[temp>-15]
+met2 <- met[order(temp)]
+head(met2)
+```
+
+
+## 6. Calculate summary statistics
+
+```{r}
+elev <- met[elev==max(elev)]
+summary(elev)
+```
+
+
+```{r}
+met[elev==max(elev,na.rm=T), summary(wind.sp)]
+```
+
+```{r}
+met[elev==max(elev,na.rm=T), .(
+  temp_wind= cor(temp, wind.sp, use= "complete"),
+  temp_hour= cor(temp, hour, use= "complete"),
+  wind.sp_day= cor(wind.sp, day, use= "complete"),
+  wind.sp_hour= cor(wind.sp, hour, use= "complete")
+)]
+```
+
+
+## 7. Exploratory graphs
+```{r}
+hist(met$elev, breaks=100)
+```
+```{r}
+hist(met$temp)
+```
+```{r}
+hist(met$wind.sp)
+```
+```{r}
+if (!require(leaflet)){
+  install.packages("leaflet")
+}
+library(leaflet)
+library(dplyr)
+leaflet(elev) %>%
+  addProviderTiles('OpenStreetMap') %>% 
+  addCircles(lat=~lat,lng=~lon, opacity=1, fillOpacity=1, radius=100)
+```
+
+
+```{r}
+
+```
+
+
+
