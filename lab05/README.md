@@ -3,13 +3,6 @@ Lab 05
 Yumeng Gao
 2022-09-21
 
-``` r
-library(webshot)
-webshot::install_phantomjs()
-```
-
-    ## It seems that the version of `phantomjs` installed is greater than or equal to the requested version.To install the requested version or downgrade to another version, use `force = TRUE`.
-
 ## 1. Read in the data
 
 First download and then read in with data.table:fread()
@@ -216,3 +209,13 @@ station_averages[ which.min(temp_dist50)]
 
     ##    USAFID     temp  wind.sp atm.press temp_dist50
     ## 1: 720458 23.68173 1.209682       NaN 0.002328907
+
+It matches the result above.
+
+## Question 2: Representative station per state
+
+Just like the previous question, you are asked to identify what is the
+most representative, the median, station per state. This time, instead
+of looking at one variable at a time, look at the euclidean distance. If
+multiple stations show in the median, select the one located at the
+lowest latitude.
