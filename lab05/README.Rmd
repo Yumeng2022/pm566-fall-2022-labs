@@ -6,6 +6,12 @@ output: github_document
 always_allow_html: true
 ---
 
+```{r}
+library(webshot)
+webshot::install_phantomjs()
+```
+
+
 ## 1. Read in the data
 First download and then read in with data.table:fread()
 ```{r}
@@ -111,7 +117,68 @@ It matches the result above.
 
 Just like the previous question, you are asked to identify what is the most representative, the median, station per state. This time, instead of looking at one variable at a time, look at the euclidean distance. If multiple stations show in the median, select the one located at the lowest latitude.
 
+```{r}
+station_averages =
+  met[, .(
+    temp= mean(temp, na.rm=T),
+    wind.sp= mean(wind.sp, na.rm=T),
+    atm.press= mean(atm.press, na.rm=T)
+  ), by=  .(USAFID, STATE)]
+```
 
+```{r}
+statemeds= station_averages[, .(
+  temp50 = median(temp, na.rm=T),
+  windsp50 = median(wind.sp, na.rm=T),
+  atmpress50 = median(atm.press, na.rm=T)
+),by= STATE]
+statemeds
+```
+
+```{r}
+station_averages= 
+  merge(
+  x= station_averages,
+  y= statemeds,
+  by.x= "STATE",
+  by.y= "STATE",
+  all.x= T,
+  ALL.y= F
+)
+```
+
+
+
+```{r}
+station_averages[ , temp_dist_state50 := temp- temp50]
+station_averages[ , windsp_dist_state50 := wind.sp- windsp50]             
+station_averages[ , atmpress_dist_state50 := atm.press- atmpress50]      
+```
+
+```{r}
+station_averages[ , eucdist := temp_dist_state50^2 +
+                    windsp_dist_state50^2]
+station_averages[ , .(
+  rep50= min(eucdist))
+  , by=STATE]
+```
+
+```{r}
+repstation= station_averages[ , .(
+  eucdist= min(eucdist))
+  , by=STATE]
+```
+
+```{r}
+test= merge(
+  x= station_averages,
+  y= repstation,
+  by.x= c("eucdist","STATE"),
+  by.y= c("eucdist","STATE"),
+  all.x= F,
+  all.y= T
+)
+```
 
 
 
