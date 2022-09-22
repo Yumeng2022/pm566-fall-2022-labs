@@ -153,7 +153,7 @@ met= merge(
 )
 ```
 
-## Question 1: Representative station for the US
+## Question 1: Representative station for the US.
 
 Computer mean temperature, wind speed and atmospheric pressure for each
 weather station, and pick the weather stations with the average value
@@ -219,7 +219,7 @@ station_averages[ which.min(temp_dist50)]
 
 It matches the result above.
 
-## Question 2: Representative station per state
+## Question 2: Representative station per state.
 
 Just like the previous question, you are asked to identify what is the
 most representative, the median, station per state. This time, instead
