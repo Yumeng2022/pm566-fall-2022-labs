@@ -23,6 +23,7 @@ library(tidyr)
 library(ggplot2)
 library(forcats)
 ```
+
 ## Read in the data
 First download and then read in csv.
 ```{r read-data, cache= TRUE}
@@ -36,6 +37,7 @@ str(mts)
 mts= as_tibble(mts)
 mts
 ```
+
 ## Question 1: What specialties do we have?
 We can use count() from dplyr to figure out how many records are there per specialty? 
 ```{r mdeical_specialties}
@@ -59,7 +61,7 @@ specialties %>%
 
 The distribution is not at all uniform.
 
-## Question 2  Visualize the top 20 most frequent words in the transcription column
+## Question 2: Visualize the top 20 most frequent words in the transcription column
 
 * Tokenize the the words in the transcription column
 * Count the number of times each token appears
@@ -77,21 +79,72 @@ mts %>%
   ggplot(aes(n, fct_reorder(word, n))) +
   geom_col()
 ```
+
 There are a lot of stop words here, non-specific to medical text,
 We do see "patient".
 
 ## Question 3
-Redo visualization but remove stopwords before
-Bonus points if you remove numbers as well
+* Redo visualization but remove stopwords before
+* Bonus points if you remove numbers as well
 
-
-```{r}
+```{r, cache=TRUE}
 mts %>%
   unnest_tokens(word, transcription) %>%
-  anti_join(stop_words, by = c("word")) %>%
   count(word, sort = TRUE) %>%
+  anti_join(stop_words, by = c("word")) %>%
+  # use regular expression to filter out numbers (not match 0-9)
+  filter( !grepl(pattern= "^[0-9]+$", x= word)) %>%
   top_n(20, n) %>%
   ggplot(aes(n, fct_reorder(word, n))) +
   geom_col()
 ```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 

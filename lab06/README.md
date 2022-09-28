@@ -226,4 +226,48 @@ specialties %>%
     ## Selecting by n
 
 ![](README_files/figure-gfm/barplot-of-specialty-counts-1.png)<!-- -->
+
 The distribution is not at all uniform.
+
+## Question 2 Visualize the top 20 most frequent words in the transcription column
+
+-   Tokenize the the words in the transcription column
+-   Count the number of times each token appears
+-   Visualize the top 20 most frequent words
+
+Explain what we see from this result. Does it makes sense? What insights
+(if any) do we get?
+
+``` r
+mts %>%
+  unnest_tokens(word, transcription) %>%
+  #anti_join(stop_words, by = c("word")) %>%
+  count(word, sort = TRUE) %>%
+  top_n(20, n) %>%
+  ggplot(aes(n, fct_reorder(word, n))) +
+  geom_col()
+```
+
+![](README_files/figure-gfm/unnamed-chunk-2-1.png)<!-- -->
+
+There are a lot of stop words here, non-specific to medical text, We do
+see “patient”.
+
+## Question 3
+
+-   Redo visualization but remove stopwords before
+-   Bonus points if you remove numbers as well
+
+``` r
+mts %>%
+  unnest_tokens(word, transcription) %>%
+  count(word, sort = TRUE) %>%
+  anti_join(stop_words, by = c("word")) %>%
+  # use regular expression to filter out numbers (not match 0-9)
+  filter( !grepl(pattern= "^[0-9]+$", x= word)) %>%
+  top_n(20, n) %>%
+  ggplot(aes(n, fct_reorder(word, n))) +
+  geom_col()
+```
+
+![](README_files/figure-gfm/unnamed-chunk-3-1.png)<!-- -->
