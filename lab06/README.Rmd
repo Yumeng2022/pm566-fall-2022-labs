@@ -67,10 +67,7 @@ The distribution is not at all uniform.
 * Count the number of times each token appears
 * Visualize the top 20 most frequent words
 
-Explain what we see from this result. Does it makes sense? What insights (if any) do we get?
-
-
-```{r}
+```{r token-transcription, cache=TRUE}
 mts %>%
   unnest_tokens(word, transcription) %>%
   #anti_join(stop_words, by = c("word")) %>%
@@ -83,7 +80,7 @@ mts %>%
 There are a lot of stop words here, non-specific to medical text,
 We do see "patient".
 
-## Question 3
+## Question 3: Redo analysis in Q2, amd remove stopwords
 * Redo visualization but remove stopwords before
 * Bonus points if you remove numbers as well
 
@@ -98,6 +95,97 @@ mts %>%
   ggplot(aes(n, fct_reorder(word, n))) +
   geom_col()
 ```
+
+It give us a much better idea of what the text is about after getting rid of the stopwords and numbers.
+
+## Question 4
+repeat question 2, but this time tokenize into bi-grams. 
+how does the result change if you look at tri-grams?
+
+
+```{r bigrams-transcription, cache=TRUE}
+mts %>%
+  unnest_ngrams(bigram, transcription, n=2) %>%
+  count(bigram, sort = TRUE) %>%
+  top_n(20, n) %>%
+  ggplot(aes(n, fct_reorder(bigram, n))) +
+  geom_col()
+```
+
+```{r trigrams-transcription, cache=TRUE}
+mts %>%
+  unnest_ngrams(trigram, transcription, n=3) %>%
+  count(trigram, sort = TRUE) %>%
+  top_n(20, n) %>%
+  ggplot(aes(n, fct_reorder(trigram, n))) +
+  geom_col()
+```
+
+Top 20 trigrams seemed to find a few more medical word group than bigrams.
+
+## Question 5
+Using the results you got from questions 4. Pick a word and count the words that appears after and before it.
+
+```{r bigrams-transcription-nextword, cache=TRUE}
+ptbigram =
+  mts %>%
+  unnest_ngrams(bigram, transcription, n=2) %>%
+  separate(bigram, into = c("word1", "word2"), sep = " ") %>%
+  select(word1, word2) %>%
+  filter(word1 == "patient" | word2 == "patient")
+```
+
+Words appearing before patient:
+
+```{r before-patient} 
+ptbigram %>%
+  filter(word2 == "patient") %>%
+  count(word1, sort=T) %>%
+  anti_join(stop_words, by= c("word1"= "word")) %>%
+  top_n(10) %>%
+knitr::kable()
+```
+
+Words appearing after patient:
+
+```{r after-patient} 
+ptbigram %>%
+  filter(word1 == "patient") %>%
+  count(word2, sort=T) %>%
+  anti_join(stop_words, by= c("word2"= "word")) %>%
+  top_n(10) %>%
+knitr::kable()
+```
+
+## Question 6
+Which words are most used in each of the specialties. you can use group_by() and top_n() from dplyr to have the calculations be done within each specialty. Remember to remove stopwords. How about the most 5 used words?
+
+
+
+
+## Question 7 - extra
+Find your own insight in the data:
+
+Ideas:
+
+Interesting ngrams
+See if certain words are used more in some specialties then others
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

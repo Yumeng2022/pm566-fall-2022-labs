@@ -229,14 +229,11 @@ specialties %>%
 
 The distribution is not at all uniform.
 
-## Question 2 Visualize the top 20 most frequent words in the transcription column
+## Question 2: Visualize the top 20 most frequent words in the transcription column
 
 -   Tokenize the the words in the transcription column
 -   Count the number of times each token appears
 -   Visualize the top 20 most frequent words
-
-Explain what we see from this result. Does it makes sense? What insights
-(if any) do we get?
 
 ``` r
 mts %>%
@@ -248,12 +245,12 @@ mts %>%
   geom_col()
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-2-1.png)<!-- -->
+![](README_files/figure-gfm/token-transcription-1.png)<!-- -->
 
 There are a lot of stop words here, non-specific to medical text, We do
 see “patient”.
 
-## Question 3
+## Question 3: Redo analysis in Q2, amd remove stopwords
 
 -   Redo visualization but remove stopwords before
 -   Bonus points if you remove numbers as well
@@ -270,4 +267,120 @@ mts %>%
   geom_col()
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-3-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-2-1.png)<!-- -->
+
+It give us a much better idea of what the text is about after getting
+rid of the stopwords and numbers.
+
+## Question 4
+
+repeat question 2, but this time tokenize into bi-grams. how does the
+result change if you look at tri-grams?
+
+``` r
+mts %>%
+  unnest_ngrams(bigram, transcription, n=2) %>%
+  count(bigram, sort = TRUE) %>%
+  top_n(20, n) %>%
+  ggplot(aes(n, fct_reorder(bigram, n))) +
+  geom_col()
+```
+
+![](README_files/figure-gfm/bigrams-transcription-1.png)<!-- -->
+
+``` r
+mts %>%
+  unnest_ngrams(trigram, transcription, n=3) %>%
+  count(trigram, sort = TRUE) %>%
+  top_n(20, n) %>%
+  ggplot(aes(n, fct_reorder(trigram, n))) +
+  geom_col()
+```
+
+![](README_files/figure-gfm/trigrams-transcription-1.png)<!-- -->
+
+Top 20 trigrams seemed to find a few more medical word group than
+bigrams.
+
+## Question 5
+
+Using the results you got from questions 4. Pick a word and count the
+words that appears after and before it.
+
+``` r
+ptbigram =
+  mts %>%
+  unnest_ngrams(bigram, transcription, n=2) %>%
+  separate(bigram, into = c("word1", "word2"), sep = " ") %>%
+  select(word1, word2) %>%
+  filter(word1 == "patient" | word2 == "patient")
+```
+
+Words appearing before patient:
+
+``` r
+ptbigram %>%
+  filter(word2 == "patient") %>%
+  count(word1, sort=T) %>%
+  anti_join(stop_words, by= c("word1"= "word")) %>%
+  top_n(10) %>%
+knitr::kable()
+```
+
+    ## Selecting by n
+
+| word1       |   n |
+|:------------|----:|
+| history     | 101 |
+| procedure   |  32 |
+| female      |  26 |
+| sample      |  23 |
+| male        |  22 |
+| illness     |  16 |
+| plan        |  16 |
+| indications |  15 |
+| allergies   |  14 |
+| correct     |  11 |
+| detail      |  11 |
+
+Words appearing after patient:
+
+``` r
+ptbigram %>%
+  filter(word1 == "patient") %>%
+  count(word2, sort=T) %>%
+  anti_join(stop_words, by= c("word2"= "word")) %>%
+  top_n(10) %>%
+knitr::kable()
+```
+
+    ## Selecting by n
+
+| word2      |   n |
+|:-----------|----:|
+| tolerated  | 994 |
+| denies     | 552 |
+| underwent  | 180 |
+| received   | 160 |
+| reports    | 155 |
+| understood | 113 |
+| lives      |  81 |
+| admits     |  69 |
+| appears    |  68 |
+| including  |  67 |
+
+## Question 6
+
+Which words are most used in each of the specialties. you can use
+group_by() and top_n() from dplyr to have the calculations be done
+within each specialty. Remember to remove stopwords. How about the most
+5 used words?
+
+## Question 7 - extra
+
+Find your own insight in the data:
+
+Ideas:
+
+Interesting ngrams See if certain words are used more in some
+specialties then others
