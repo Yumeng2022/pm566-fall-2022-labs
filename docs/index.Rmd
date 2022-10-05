@@ -94,7 +94,7 @@ publications <- httr::content(publications)
 publications_txt <- as.character(publications)
 ```
 
-
+q4
 
 
 
