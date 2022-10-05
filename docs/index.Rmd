@@ -40,29 +40,64 @@ counts <- as.character(counts)
 stringr::str_extract(counts, "[0-9,]+")
 ```
 
+## Question 2: Academic publications on COVID19 and Hawaii
+You need to query the following The parameters passed to the query are documented here.
+Use the function httr::GET() to make the following query:
+Baseline URL: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi
+Query parameters:
+  db: pubmed
+  term: covid19 hawaii
+  retmax: 1000
 
+```{r}
+query_ids <- GET(
+  url   = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi",
+  query = list(
+    db= "pubmed",
+    term= "covid19 hawaii",
+    retmax= 1000
+  ), 
+)
 
-
-## R Markdown
-
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
-
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
-
-```{r cars}
-summary(cars)
+# Extracting the content of the response of GET
+ids <- httr::content(query_ids)
 ```
 
-## Including Plots
+## Question 3: Get details about the articles
+The Ids are wrapped around text in the following way: <Id>... id number ...</Id>. we can use a regular expression that extract that information. 
+```{r}
+# Turn the result into a character vector
+ids <- as.character(ids)
 
-You can also embed plots, for example:
+# Find all the ids 
+ids <- stringr::str_extract_all(ids, "<Id>[[:digit:]]+</Id>")[[1]]
 
-```{r pressure, echo=FALSE}
-plot(pressure)
+# Remove all the leading and trailing <Id> </Id>. Make use of "|"
+ids <- stringr::str_remove_all(ids, "</?Id>")
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
+Grab publications with pubmed id 
+```{r}
+publications <- GET(
+  url   = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi",
+  query = list(
+    db= "pubmed",
+    id= paste(ids,collapse = ","),
+    retmax= 1000,
+    rettype= "abstract"
+    )
+)
+
+# Turning the output into character vector
+publications <- httr::content(publications)
+publications_txt <- as.character(publications)
+```
 
 
 
-yumeng2022.github.io/pm566-fall-2022-labs/
+
+
+
+
+
