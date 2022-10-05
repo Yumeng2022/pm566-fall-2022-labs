@@ -7,7 +7,41 @@ output: html_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+library(R.utils)
+library(lubridate)
+library(tidyverse)
+library(tidytext)
+library(dplyr)
+library(dtplyr)
+library(data.table)
+library(tidyr)
+library(ggplot2)
+library(forcats)
+
+library(stringr)
+library(rvest)
+library(xml2)
+library(httr)
 ```
+
+## Question 1: How many sars-cov-2 papers?
+Build an automatic counter of sars-cov-2 papers using PubMed. 
+```{r}
+# Downloading the website
+website <- xml2::read_html("https://pubmed.ncbi.nlm.nih.gov/?term=sars-cov-2")
+
+# Finding the counts
+counts <- xml2::xml_find_first(website, "/html/body/main/div[9]/div[2]/div[2]/div[1]/div[1]/span")
+
+# Turning it into text
+counts <- as.character(counts)
+
+# Extracting the data using regex
+stringr::str_extract(counts, "[0-9,]+")
+```
+
+
+
 
 ## R Markdown
 
@@ -28,3 +62,7 @@ plot(pressure)
 ```
 
 Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
+
+
+yumeng2022.github.io/pm566-fall-2022-labs/

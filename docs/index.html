@@ -370,6 +370,22 @@ pre code {
 </div>
 
 
+<div id="question-1-how-many-sars-cov-2-papers" class="section level2">
+<h2>Question 1: How many sars-cov-2 papers?</h2>
+<p>Build an automatic counter of sars-cov-2 papers using PubMed.</p>
+<pre class="r"><code># Downloading the website
+website &lt;- xml2::read_html(&quot;https://pubmed.ncbi.nlm.nih.gov/?term=sars-cov-2&quot;)
+
+# Finding the counts
+counts &lt;- xml2::xml_find_first(website, &quot;/html/body/main/div[9]/div[2]/div[2]/div[1]/div[1]/span&quot;)
+
+# Turning it into text
+counts &lt;- as.character(counts)
+
+# Extracting the data using regex
+stringr::str_extract(counts, &quot;[0-9,]+&quot;)</code></pre>
+<pre><code>## [1] &quot;179,021&quot;</code></pre>
+</div>
 <div id="r-markdown" class="section level2">
 <h2>R Markdown</h2>
 <p>This is an R Markdown document. Markdown is a simple formatting
@@ -395,6 +411,7 @@ chunk like this:</p>
 <p>Note that the <code>echo = FALSE</code> parameter was added to the
 code chunk to prevent printing of the R code that generated the
 plot.</p>
+<p>yumeng2022.github.io/pm566-fall-2022-labs/</p>
 </div>
 
 
