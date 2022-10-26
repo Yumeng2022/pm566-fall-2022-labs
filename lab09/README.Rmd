@@ -3,11 +3,10 @@ title: "Lab 09"
 author: "Yumeng Gao"
 date: "`r Sys.Date()`"
 output: 
-    html_document: default
-    word_document: default
     github_document:
+      html_preview: false
+    html_document: default
     pdf_document: default
-    html_preview: false
 always_allow_html: true
 ---
 
@@ -94,27 +93,64 @@ microbenchmark::microbenchmark(
 ```
 
 
+## Problem 4. Show example
 
+```{r}
+library(parallel)
 
+my_boot <- function(dat, stat, R, ncpus = 1L) {
+  
+  # Getting the random indices
+  n <- nrow(dat)
+  idx <- matrix(sample.int(n, n*R, TRUE), nrow=n, ncol=R)
+ 
+  # Making the cluster using `ncpus`
+  # STEP 1: GOES HERE
+  cl <- makePSOCKcluster(4)    
+  # STEP 2: GOES HERE
+  clusterSetRNGStream(cl, 123)
+  clusterExport(cl, c("stat", "dat","idx"), envir = environment())
 
+  
+    # STEP 3: THIS FUNCTION NEEDS TO BE REPLACES WITH parLapply
+  ans <- lapply(seq_len(R), function(i) {
+    stat(dat[idx[,i], , drop=FALSE])
+  })
+  
+  # Coercing the list into a matrix
+  ans <- do.call(rbind, ans)
+  
+  # STEP 4: GOES HERE
+  ans
+  
+}
+```
 
+```{r}
+# Bootstrap of an OLS
+my_stat <- function(d) coef(lm(y ~ x, data=d))
 
+# DATA SIM
+set.seed(1)
+n <- 500; R <- 1e4
 
+x <- cbind(rnorm(n)); y <- x*5 + rnorm(n)
 
+# Checking if we get something similar as lm
+ans0 <- confint(lm(y~x))
+ans1 <- my_boot(dat = data.frame(x, y), my_stat, R = R, ncpus = 2L)
 
+# You should get something like this
+t(apply(ans1, 2, quantile, c(.025,.975)))
+##                   2.5%      97.5%
+## (Intercept) -0.1372435 0.05074397
+## x            4.8680977 5.04539763
+ans0
 
-
-
-
-
-
-
-
-
-
-
-
-
+##                  2.5 %     97.5 %
+## (Intercept) -0.1379033 0.04797344
+## x            4.8650100 5.04883353
+```
 
 
 
