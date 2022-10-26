@@ -1,0 +1,102 @@
+---
+title: "Lab 09"
+author: "Yumeng Gao"
+date: "`r Sys.Date()`"
+output: github_document
+always_allow_html: true
+---
+
+```{r}
+library(R.utils)
+library(data.table)
+library(tidyverse)
+library(lubridate)
+library(dtplyr)
+library(webshot)
+```
+
+
+## Problem 2.
+
+Create a n x k matrix of Poisson variables with mean lambda
+```{r}
+set.seed(1235)
+fun1 <- function(n = 100, k = 4, lambda = 4) {
+  x <- NULL
+  
+  for (i in 1:n)
+    x <- rbind(x, rpois(k, lambda))
+  
+  return(x)
+}
+
+f1=fun1(100,4)
+mean(f1)
+f1=fun1(1000,4)
+#f1=fun1(10000,4)
+#f1=fun1(50000,4) #longer time
+
+
+fun1alt <- function(n = 100, k = 4, lambda = 4) {
+  x= matrix( rpois(n*k, lambda) , ncol=4)  
+  return(x)
+}
+
+# Benchmarking
+microbenchmark::microbenchmark(
+  fun1(),
+  fun1alt()
+)
+
+```
+
+
+```{r}
+d= matrix(1:16, ncol=4)
+d
+```
+
+```{r}
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
