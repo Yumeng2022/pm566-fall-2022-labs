@@ -3,92 +3,12 @@ Lab 09
 Yumeng Gao
 2022-10-26
 
-``` r
-library(R.utils)
-```
-
-    ## Loading required package: R.oo
-
-    ## Loading required package: R.methodsS3
-
-    ## R.methodsS3 v1.8.2 (2022-06-13 22:00:14 UTC) successfully loaded. See ?R.methodsS3 for help.
-
-    ## R.oo v1.25.0 (2022-06-12 02:20:02 UTC) successfully loaded. See ?R.oo for help.
-
-    ## 
-    ## Attaching package: 'R.oo'
-
-    ## The following object is masked from 'package:R.methodsS3':
-    ## 
-    ##     throw
-
-    ## The following objects are masked from 'package:methods':
-    ## 
-    ##     getClasses, getMethods
-
-    ## The following objects are masked from 'package:base':
-    ## 
-    ##     attach, detach, load, save
-
-    ## R.utils v2.12.0 (2022-06-28 03:20:05 UTC) successfully loaded. See ?R.utils for help.
-
-    ## 
-    ## Attaching package: 'R.utils'
-
-    ## The following object is masked from 'package:utils':
-    ## 
-    ##     timestamp
-
-    ## The following objects are masked from 'package:base':
-    ## 
-    ##     cat, commandArgs, getOption, isOpen, nullfile, parse, warnings
-
-``` r
-library(data.table)
-library(tidyverse)
-```
-
-    ## ── Attaching packages
-    ## ───────────────────────────────────────
-    ## tidyverse 1.3.2 ──
-
-    ## ✔ ggplot2 3.3.6     ✔ purrr   0.3.4
-    ## ✔ tibble  3.1.8     ✔ dplyr   1.0.9
-    ## ✔ tidyr   1.2.0     ✔ stringr 1.4.1
-    ## ✔ readr   2.1.2     ✔ forcats 0.5.2
-    ## ── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
-    ## ✖ dplyr::between()   masks data.table::between()
-    ## ✖ tidyr::extract()   masks R.utils::extract()
-    ## ✖ dplyr::filter()    masks stats::filter()
-    ## ✖ dplyr::first()     masks data.table::first()
-    ## ✖ dplyr::lag()       masks stats::lag()
-    ## ✖ dplyr::last()      masks data.table::last()
-    ## ✖ purrr::transpose() masks data.table::transpose()
-
-``` r
-library(lubridate)
-```
-
-    ## 
-    ## Attaching package: 'lubridate'
-    ## 
-    ## The following objects are masked from 'package:data.table':
-    ## 
-    ##     hour, isoweek, mday, minute, month, quarter, second, wday, week,
-    ##     yday, year
-    ## 
-    ## The following objects are masked from 'package:base':
-    ## 
-    ##     date, intersect, setdiff, union
-
-``` r
-library(dtplyr)
-library(webshot)
-```
+(Rscript –vanilla -e ‘rmarkdown::render(“README.Rmd”, output_format=
+“all”)’)
 
 ## Problem 2.
 
-Create a n x k matrix of Poisson variables with mean lambda
+1.  Create a n x k matrix of Poisson variables with mean lambda
 
 ``` r
 set.seed(1235)
@@ -126,9 +46,9 @@ microbenchmark::microbenchmark(
 ```
 
     ## Unit: microseconds
-    ##       expr     min       lq     mean   median       uq      max neval
-    ##     fun1() 302.371 326.1290 426.7499 389.8255 488.0490  792.026   100
-    ##  fun1alt()  18.613  20.9725  58.8476  23.4580  30.9515 2908.473   100
+    ##       expr     min       lq      mean  median        uq      max neval
+    ##     fun1() 559.304 754.1980 967.13002 923.104 1043.1965 2670.241   100
+    ##  fun1alt()  25.970  31.8475  79.76895  35.318   40.7435 3711.512   100
 
 ``` r
 d= matrix(1:16, ncol=4)
@@ -140,3 +60,82 @@ d
     ## [2,]    2    6   10   14
     ## [3,]    3    7   11   15
     ## [4,]    4    8   12   16
+
+``` r
+diag(d)
+```
+
+    ## [1]  1  6 11 16
+
+``` r
+d[2]
+```
+
+    ## [1] 2
+
+``` r
+d[2,1]
+```
+
+    ## [1] 2
+
+``` r
+d[c(1,6,11,16)]
+```
+
+    ## [1]  1  6 11 16
+
+## Problem 3.
+
+Find the column max (hint: Checkout the function max.col()).
+
+``` r
+# Data Generating Process (10 x 10,000 matrix)
+set.seed(1234)
+M <- matrix(runif(12,), ncol=4)
+M
+```
+
+    ##           [,1]      [,2]        [,3]      [,4]
+    ## [1,] 0.1137034 0.6233794 0.009495756 0.5142511
+    ## [2,] 0.6222994 0.8609154 0.232550506 0.6935913
+    ## [3,] 0.6092747 0.6403106 0.666083758 0.5449748
+
+``` r
+# Find each column's max value
+fun2 <- function(x) {
+  apply(x, 2, max)
+  x
+}
+fun2(M)
+```
+
+    ##           [,1]      [,2]        [,3]      [,4]
+    ## [1,] 0.1137034 0.6233794 0.009495756 0.5142511
+    ## [2,] 0.6222994 0.8609154 0.232550506 0.6935913
+    ## [3,] 0.6092747 0.6403106 0.666083758 0.5449748
+
+``` r
+fun2alt <- function(x) {
+  idx= max.col(t(x))
+  x[cbind(idx, 1:4)]
+}
+fun2alt(M)
+```
+
+    ## [1] 0.6222994 0.8609154 0.6660838 0.6935913
+
+``` r
+x <- matrix(rnorm(1e4), nrow=10)
+
+# Benchmarking
+microbenchmark::microbenchmark(
+  fun2(x),
+  fun2alt(x)
+)
+```
+
+    ## Unit: microseconds
+    ##        expr      min       lq      mean    median       uq       max neval
+    ##     fun2(x) 2173.706 2361.104 3036.7854 2557.5070 3223.862 11522.175   100
+    ##  fun2alt(x)  185.396  234.925  338.2975  264.7835  311.168  4440.228   100
