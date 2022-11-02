@@ -123,17 +123,44 @@ GROUP BY customer_id
 
 ## Exercise 4.1
 Construct a query that retrives all rows from the payment table where the amount is either 1.99, 7.99, 9.99.
-```{r}
 
+```{r}
+dbGetQuery(con,"
+           PRAGMA table_info(payment)
+           "
+)
+```
+
+```{r}
+dbGetQuery(con,"
+SELECT *
+FROM payment
+WHERE amount IN (1.99, 7.99, 9.99)
+")
 ```
 
 ## Exercise 4.2
 Construct a query that retrives all rows from the payment table where the amount is greater then 5
-
+```{r}
+dbGetQuery(con,"
+SELECT *
+FROM payment
+WHERE amount >5
+LIMIT 15
+")
+```
 
 
 ## Exercise 4.3
 Construct a query that retrives all rows from the payment table where the amount is greater then 5 and less then 8
+```{r}
+dbGetQuery(con,"
+SELECT *
+FROM payment
+WHERE amount >5 AND amount <8
+LIMIT 15
+")
+```
 
 
 # Exercise 5
