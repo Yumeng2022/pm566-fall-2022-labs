@@ -136,6 +136,7 @@ dbGetQuery(con,"
 SELECT *
 FROM payment
 WHERE amount IN (1.99, 7.99, 9.99)
+LIMIT 15
 ")
 ```
 
@@ -165,21 +166,63 @@ LIMIT 15
 
 # Exercise 5
 Retrive all the payment IDs and their amount from the customers whose last name is ‘DAVIS’.
+```{r}
+dbGetQuery(con,"
+           PRAGMA table_info(customer)
+           "
+)
+```
+
+
+```{r}
+dbGetQuery(con,"
+SELECT c.customer_id, c.last_name, p.payment_id, p.amount
+FROM customer AS c INNER JOIN payment AS p
+  ON c.customer_id = p.customer_id
+  WHERE c.last_name IN ('DAVIS')
+/* WHERE c.last_name == 'DAVIS' */  /* This is a comment */
+")
+```
 
 
 # Exercise 6
 
-##Exercise 6.1
+## Exercise 6.1
 Use COUNT(*) to count the number of rows in rental
+```{r}
+dbGetQuery(con,"
+SELECT *
+FROM payment
+WHERE amount >5 AND amount <8
+LIMIT 15
+")
+```
+
+## Exercise 6.2
+Use COUNT(*) and GROUP BY to count the number of rentals for each customer_id
+
+## Exercise 6.3
+Repeat the previous query and sort by the count in descending order
+
+## Exercise 6.4
+Repeat the previous query but use HAVING to only keep the groups with 40 or more.
 
 
+# Exercise 7
+
+The following query calculates a number of summary statistics for the payment table using MAX, MIN, AVG and SUM
+
+## Exercise 7.1
+Modify the above query to do those calculations for each customer_id
+
+## Exercise 7.2
+Modify the above query to only keep the customer_ids that have more then 5 payments
 
 
-
-Run the following chunk to disconnect from the connection.
+* Run the following chunk to disconnect from the connection.
 ```{r}
 # clean up
-dbDisconnect(con)
+#dbDisconnect(con)
 ```
 
 
