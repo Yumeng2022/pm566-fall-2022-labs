@@ -1,0 +1,175 @@
+---
+title: "Lab 10"
+author: "Yumeng Gao"
+date: "`r Sys.Date()`"
+output: 
+ github_document:
+always_allow_html: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+options(repos= c(CRAN= "https://cran.rstudio.com"))
+```
+
+## Data Setup
+```{r}
+# install.packages(c("RSQLite", "DBI"))
+if(!require(RSQsite)) install.packages("RSQLite")
+if(!require(DBI)) install.packages("DBI")
+
+library(RSQLite)
+library(DBI)
+```
+
+```{r}
+# Initialize a temporary in memory database
+con <- dbConnect(SQLite(), ":memory:")
+
+# Download tables
+actor <- read.csv("https://raw.githubusercontent.com/ivanceras/sakila/master/csv-sakila-db/actor.csv")
+rental <- read.csv("https://raw.githubusercontent.com/ivanceras/sakila/master/csv-sakila-db/rental.csv")
+customer <- read.csv("https://raw.githubusercontent.com/ivanceras/sakila/master/csv-sakila-db/customer.csv")
+payment <- read.csv("https://raw.githubusercontent.com/ivanceras/sakila/master/csv-sakila-db/payment_p2007_01.csv")
+
+# Copy data.frames to database
+dbWriteTable(con, "actor", actor)
+dbWriteTable(con, "rental", rental)
+dbWriteTable(con, "customer", customer)
+dbWriteTable(con, "payment", payment)
+
+dbListTables(con)
+```
+
+* sql commands (similar to str() in r)
+```{sql, connection=con, output.var= "x1"}
+PRAGMA table_info(actor)
+```
+
+```{r}
+x1
+```
+
+* do sql from r
+```{r}
+dbGetQuery(con,"
+           PRAGMA table_info(actor)
+           "
+)
+```
+
+
+# Exercise 1
+Retrive the actor ID, first name and last name for all actors using the actor table. Sort by last name and then by first name.
+```{sql, connection=con}
+SELECT actor_id, first_name, last_name
+FROM actor
+ORDER by last_name, first_name
+LIMIT 15
+```
+
+```{r}
+dbGetQuery(con,"
+SELECT actor_id, first_name, last_name
+FROM actor
+ORDER by last_name, first_name
+LIMIT 15
+")
+```
+
+
+# Exercise 2
+Retrive the actor ID, first name, and last name for actors whose last name equals ‘WILLIAMS’ or ‘DAVIS’.
+```{r}
+dbGetQuery(con,"
+SELECT actor_id, first_name, last_name
+FROM actor 
+WHERE last_name IN ('WILLIAMS', 'DAVIS')
+ORDER BY last_name
+")
+```
+
+
+# Exercise 3
+Write a query against the rental table that returns the IDs of the customers who rented a film on July 5, 2005 (use the rental.rental_date column, and you can use the date() function to ignore the time component). Include a single row for each distinct customer ID.
+
+```{r}
+dbGetQuery(con,"
+           PRAGMA table_info(rental)
+           "
+)
+```
+
+```{r}
+dbGetQuery(con,"
+SELECT DISTINCT customer_id, rental_date
+FROM rental
+WHERE date(rental_date) = '2005-07-05'
+")
+```
+
+
+```{r}
+dbGetQuery(con,"
+SELECT DISTINCT customer_id,
+COUNT (*) AS N
+FROM rental
+WHERE date(rental_date) = '2005-07-05'
+GROUP BY customer_id
+")
+```
+
+#Exercise 4
+
+## Exercise 4.1
+Construct a query that retrives all rows from the payment table where the amount is either 1.99, 7.99, 9.99.
+```{r}
+
+```
+
+## Exercise 4.2
+Construct a query that retrives all rows from the payment table where the amount is greater then 5
+
+
+
+## Exercise 4.3
+Construct a query that retrives all rows from the payment table where the amount is greater then 5 and less then 8
+
+
+# Exercise 5
+Retrive all the payment IDs and their amount from the customers whose last name is ‘DAVIS’.
+
+
+# Exercise 6
+
+##Exercise 6.1
+Use COUNT(*) to count the number of rows in rental
+
+
+
+
+
+Run the following chunk to disconnect from the connection.
+```{r}
+# clean up
+dbDisconnect(con)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
