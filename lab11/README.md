@@ -461,7 +461,6 @@ fig_Today <- fig
 
 ### Plot together 
 ________(fig_pick.date, fig_Today, nrows = 2, margin = .05)
-
 ```
 
 
